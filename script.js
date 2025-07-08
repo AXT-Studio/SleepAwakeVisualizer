@@ -7,6 +7,33 @@ document.addEventListener('DOMContentLoaded', () => {
     const GRAPH_WIDTH = 1440;
     const CANVAS_WIDTH = GRAPH_WIDTH + PADDING.left + PADDING.right;
 
+    const updateURL = () => {
+        const data = dataInput.value;
+        try {
+            const encodedData = btoa(data);
+            const newUrl = data.trim()
+                ? `${window.location.pathname}?data=${encodedData}`
+                : window.location.pathname;
+            history.replaceState({}, '', newUrl);
+        } catch (e) {
+            console.error("Failed to encode data for URL:", e);
+        }
+    };
+
+    const loadFromURL = () => {
+        const params = new URLSearchParams(window.location.search);
+        const data = params.get('data');
+        if (data) {
+            try {
+                const decodedData = atob(data);
+                dataInput.value = decodedData;
+            } catch (e) {
+                console.error('Failed to decode data from URL:', e);
+                history.replaceState({}, '', window.location.pathname);
+            }
+        }
+    };
+
     const setupCanvas = () => {
         const dpr = window.devicePixelRatio || 1;
         canvas.style.width = `${CANVAS_WIDTH}px`;
@@ -81,7 +108,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        if (sleepPeriods.length === 0) return;
+        if (sleepPeriods.length === 0) {
+            updateURL();
+            return;
+        }
 
         ctx.fillStyle = 'rgba(106, 136, 238, 0.8)';
         sleepPeriods.forEach(period => {
@@ -171,12 +201,12 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.shadowColor = 'transparent'; // Reset shadow for next loop iteration
             ctx.shadowBlur = 0;
         });
+        
+        updateURL();
     };
 
     dataInput.addEventListener('input', drawGraph);
-    drawGraph();
 
-    // --- Copy Button Logic ---
     const copyButton = document.getElementById('copy-button');
     copyButton.addEventListener('click', () => {
         canvas.toBlob(async (blob) => {
@@ -202,4 +232,25 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }, 'image/png');
     });
+
+    const copyLinkButton = document.getElementById('copy-link-button');
+    copyLinkButton.addEventListener('click', async () => {
+        try {
+            await navigator.clipboard.writeText(window.location.href);
+
+            const originalText = copyLinkButton.textContent;
+            copyLinkButton.textContent = 'コピーしました！';
+            copyLinkButton.disabled = true;
+            setTimeout(() => {
+                copyLinkButton.textContent = originalText;
+                copyLinkButton.disabled = false;
+            }, 2000);
+        } catch (err) {
+            console.error('リンクのコピーに失敗しました: ', err);
+            alert('リンクのコピーに失敗しました。');
+        }
+    });
+
+    loadFromURL();
+    drawGraph();
 });
