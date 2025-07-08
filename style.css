@@ -118,9 +118,10 @@ canvas {
 .button-wrapper {
     text-align: center;
     margin-top: 20px;
+
 }
 
-#copy-button {
+.copy-button {
     padding: 12px 24px;
     font-size: 1rem;
     font-family: 'Ubuntu', sans-serif;
@@ -130,12 +131,16 @@ canvas {
     border-radius: 8px;
     cursor: pointer;
     transition: background-color 0.3s, transform 0.1s;
+
+    &+& {
+        margin-left: 12px;
+    }
 }
 
-#copy-button:hover {
+.copy-button:hover {
     background-color: #5a78d0;
 }
 
-#copy-button:active {
+.copy-button:active {
     transform: scale(0.98);
 }
